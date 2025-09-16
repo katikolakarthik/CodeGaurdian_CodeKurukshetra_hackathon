@@ -1,2 +1,7 @@
 ﻿
 .env
+demo_files/
+__pycache__/
+*.pyc
+setup.py
+test_system.py
