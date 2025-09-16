@@ -19,6 +19,9 @@ from utils.embeddings import embedding_generator
 from utils.similarity import similarity_checker
 from utils.watsonx import watsonx_client
 from utils.github import github_fetcher
+from utils.review import code_reviewer
+from utils.plagiarism import plagiarism_checker
+from utils.github_api import github_api
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -552,6 +555,206 @@ async def get_submission(submission_id: str):
         "chunks": chunks_info.get('chunks', []),
         "chunk_count": len(chunks_info.get('chunks', []))
     }
+
+@app.post("/analyze_code")
+async def analyze_code(
+    code: Optional[str] = Form(None),
+    file: Optional[UploadFile] = File(None),
+    repo_url: Optional[str] = Form(None),
+    team_name: str = Form("Unknown Team"),
+    submission_name: str = Form("Code Analysis"),
+    language: str = Form("python")
+):
+    """
+    Unified endpoint for comprehensive code analysis.
+    Supports three input types: raw code, uploaded file, or GitHub repository.
+    
+    Args:
+        code: Raw code text (optional)
+        file: Uploaded code file (optional)
+        repo_url: GitHub repository URL (optional)
+        team_name: Name of the team
+        submission_name: Name of the submission
+        language: Programming language
+        
+    Returns:
+        JSON response with plagiarism and bug analysis
+    """
+    try:
+        # Determine input type and extract code
+        analysis_data = []
+        
+        if repo_url:
+            # GitHub repository analysis
+            repo_data = github_api.fetch_repository(repo_url)
+            if not repo_data['success']:
+                raise HTTPException(status_code=400, detail=f"Failed to fetch repository: {repo_data['error']}")
+            
+            for file_data in repo_data['files']:
+                file_language = _detect_language_from_extension(file_data['extension'])
+                analysis_data.append({
+                    'code': file_data['content'],
+                    'language': file_language,
+                    'filename': file_data['path'],
+                    'metadata': {
+                        'submission_id': str(uuid.uuid4()),
+                        'team_name': team_name,
+                        'submission_name': f"{submission_name} - {file_data['path']}",
+                        'language': file_language,
+                        'source': 'github',
+                        'repo_url': repo_url,
+                        'repo_owner': repo_data['owner'],
+                        'repo_name': repo_data['repo']
+                    }
+                })
+        
+        elif file:
+            # Uploaded file analysis
+            content = await file.read()
+            code_content = content.decode('utf-8')
+            analysis_data.append({
+                'code': code_content,
+                'language': language,
+                'filename': file.filename,
+                'metadata': {
+                    'submission_id': str(uuid.uuid4()),
+                    'team_name': team_name,
+                    'submission_name': submission_name,
+                    'language': language,
+                    'source': 'file_upload',
+                    'filename': file.filename
+                }
+            })
+        
+        elif code:
+            # Raw code analysis
+            analysis_data.append({
+                'code': code,
+                'language': language,
+                'filename': 'input.txt',
+                'metadata': {
+                    'submission_id': str(uuid.uuid4()),
+                    'team_name': team_name,
+                    'submission_name': submission_name,
+                    'language': language,
+                    'source': 'raw_text'
+                }
+            })
+        
+        else:
+            raise HTTPException(status_code=400, detail="No input provided. Please provide code, file, or repo_url")
+        
+        # Process each code file
+        all_plagiarism_results = []
+        all_bug_results = []
+        
+        for data in analysis_data:
+            # Plagiarism analysis
+            plagiarism_result = plagiarism_checker.check_plagiarism(
+                data['code'], 
+                data['metadata']
+            )
+            all_plagiarism_results.append(plagiarism_result)
+            
+            # Bug analysis
+            bug_result = code_reviewer.analyze_code(
+                data['code'], 
+                data['language'], 
+                data['filename']
+            )
+            all_bug_results.append(bug_result)
+        
+        # Aggregate results
+        overall_plagiarism = max([r.get('plagiarism_percentage', 0) for r in all_plagiarism_results])
+        overall_originality = min([r.get('originality_score', 100) for r in all_plagiarism_results])
+        total_bugs = sum([r.get('total_issues', 0) for r in all_bug_results])
+        
+        # Generate AI suggestions for high-priority issues
+        ai_suggestions = []
+        for bug_result in all_bug_results:
+            if bug_result.get('total_issues', 0) > 0:
+                high_priority_issues = [
+                    issue for issue in bug_result.get('bugs', []) + 
+                    bug_result.get('security_issues', []) + 
+                    bug_result.get('performance_issues', [])
+                    if issue.get('severity') == 'high'
+                ]
+                
+                if high_priority_issues:
+                    try:
+                        # Generate AI suggestions using Watsonx
+                        issue_summary = f"File: {bug_result.get('filename', 'unknown')}\n"
+                        for issue in high_priority_issues[:3]:  # Top 3 issues
+                            issue_summary += f"- {issue.get('message', '')}\n"
+                        
+                        suggestion_result = watsonx_client.generate_rewrite_suggestion(
+                            suspicious_code=issue_summary,
+                            language=bug_result.get('language', 'python')
+                        )
+                        
+                        if suggestion_result.get('success'):
+                            ai_suggestions.append({
+                                'file': bug_result.get('filename', 'unknown'),
+                                'suggestion': suggestion_result.get('explanation', ''),
+                                'rewrite': suggestion_result.get('rewritten_code', '')
+                            })
+                    except Exception as e:
+                        print(f"Warning: Failed to generate AI suggestions: {e}")
+        
+        return {
+            "success": True,
+            "analysis_id": str(uuid.uuid4()),
+            "timestamp": datetime.now().isoformat(),
+            "input_type": "github_repo" if repo_url else "file_upload" if file else "raw_code",
+            "files_analyzed": len(analysis_data),
+            "plagiarism_report": {
+                "overall_plagiarism_percentage": round(overall_plagiarism, 2),
+                "overall_originality_score": round(overall_originality, 2),
+                "total_chunks": sum([r.get('total_chunks', 0) for r in all_plagiarism_results]),
+                "flagged_chunks": sum([r.get('flagged_chunks', 0) for r in all_plagiarism_results]),
+                "file_results": all_plagiarism_results
+            },
+            "bug_report": {
+                "total_issues": total_bugs,
+                "files_analyzed": len(all_bug_results),
+                "file_results": all_bug_results,
+                "ai_suggestions": ai_suggestions
+            },
+            "metadata": {
+                "team_name": team_name,
+                "submission_name": submission_name,
+                "analysis_time": datetime.now().isoformat()
+            }
+        }
+        
+    except UnicodeDecodeError:
+        raise HTTPException(status_code=400, detail="Invalid file encoding. Please upload a text file.")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
+
+def _detect_language_from_extension(extension: str) -> str:
+    """Detect programming language from file extension."""
+    extension_map = {
+        '.py': 'python',
+        '.java': 'java',
+        '.js': 'javascript',
+        '.ts': 'typescript',
+        '.tsx': 'typescript',
+        '.jsx': 'javascript',
+        '.c': 'c',
+        '.cpp': 'cpp',
+        '.cc': 'cpp',
+        '.cxx': 'cpp',
+        '.h': 'c',
+        '.hpp': 'cpp',
+        '.html': 'html',
+        '.css': 'css',
+        '.php': 'php',
+        '.rb': 'ruby',
+        '.go': 'go',
+        '.rs': 'rust'
+    }
+    return extension_map.get(extension.lower(), 'python')
 
 if __name__ == "__main__":
     import uvicorn

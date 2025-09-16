@@ -501,6 +501,234 @@ def generate_report():
                 st.error(f"Error generating report: {str(e)}")
 
 
+def code_review_page():
+    """Page for comprehensive code analysis including plagiarism and bug detection."""
+    st.header("🔍 AI Code Reviewer & Bug Fixer")
+    st.markdown("Comprehensive code analysis with plagiarism detection, bug finding, and AI suggestions")
+    
+    # Input method selection
+    input_method = st.radio(
+        "Choose input method:",
+        ["Raw Code", "Upload File", "GitHub Repository"],
+        horizontal=True
+    )
+    
+    # Get team info
+    col1, col2 = st.columns(2)
+    with col1:
+        team_name = st.text_input("Team Name", value="Team Alpha")
+    with col2:
+        submission_name = st.text_input("Submission Name", value="Code Review")
+    
+    language = st.selectbox(
+        "Programming Language",
+        ["python", "java", "javascript", "typescript", "c", "cpp", "html", "css", "php", "ruby", "go", "rust"]
+    )
+    
+    # Input handling based on method
+    if input_method == "Raw Code":
+        code_input = st.text_area(
+            "Paste your code here",
+            height=300,
+            placeholder="def hello_world():\n    print('Hello, World!')"
+        )
+        analyze_button = st.button("🔍 Analyze Code", type="primary")
+        
+        if analyze_button and code_input.strip():
+            with st.spinner("Analyzing code for plagiarism and bugs..."):
+                try:
+                    data = {
+                        "code": code_input,
+                        "team_name": team_name,
+                        "submission_name": submission_name,
+                        "language": language
+                    }
+                    response = requests.post(f"{API_BASE_URL}/analyze_code", data=data)
+                    
+                    if response.status_code == 200:
+                        result = response.json()
+                        st.session_state['analysis_result'] = result
+                        st.rerun()
+                    else:
+                        st.error(f"❌ Error: {response.json().get('detail', 'Unknown error')}")
+                except Exception as e:
+                    st.error(f"❌ Error analyzing code: {str(e)}")
+    
+    elif input_method == "Upload File":
+        uploaded_file = st.file_uploader(
+            "Choose a code file",
+            type=['py', 'java', 'c', 'cpp', 'js', 'ts', 'tsx', 'jsx', 'html', 'css', 'php', 'rb', 'go', 'rs'],
+            help="Supported formats: Python, Java, C/C++, JavaScript, TypeScript, HTML, CSS, PHP, Ruby, Go, Rust"
+        )
+        
+        if uploaded_file and st.button("🔍 Analyze File", type="primary"):
+            with st.spinner("Analyzing file for plagiarism and bugs..."):
+                try:
+                    files = {"file": (uploaded_file.name, uploaded_file.getvalue(), "text/plain")}
+                    data = {
+                        "team_name": team_name,
+                        "submission_name": submission_name,
+                        "language": language
+                    }
+                    response = requests.post(f"{API_BASE_URL}/analyze_code", files=files, data=data)
+                    
+                    if response.status_code == 200:
+                        result = response.json()
+                        st.session_state['analysis_result'] = result
+                        st.rerun()
+                    else:
+                        st.error(f"❌ Error: {response.json().get('detail', 'Unknown error')}")
+                except Exception as e:
+                    st.error(f"❌ Error analyzing file: {str(e)}")
+    
+    elif input_method == "GitHub Repository":
+        repo_url = st.text_input(
+            "GitHub Repository URL",
+            placeholder="https://github.com/owner/repo or .../tree/branch"
+        )
+        
+        if repo_url and st.button("🔍 Analyze Repository", type="primary"):
+            with st.spinner("Fetching repository and analyzing all code files..."):
+                try:
+                    data = {
+                        "repo_url": repo_url,
+                        "team_name": team_name,
+                        "submission_name": submission_name,
+                        "language": language
+                    }
+                    response = requests.post(f"{API_BASE_URL}/analyze_code", data=data)
+                    
+                    if response.status_code == 200:
+                        result = response.json()
+                        st.session_state['analysis_result'] = result
+                        st.rerun()
+                    else:
+                        st.error(f"❌ Error: {response.json().get('detail', 'Unknown error')}")
+                except Exception as e:
+                    st.error(f"❌ Error analyzing repository: {str(e)}")
+    
+    # Display results if available
+    if 'analysis_result' in st.session_state:
+        result = st.session_state['analysis_result']
+        display_analysis_results(result)
+
+def display_analysis_results(result):
+    """Display comprehensive analysis results."""
+    st.header("📊 Analysis Results")
+    
+    # Overall metrics
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.metric(
+            "Plagiarism %",
+            f"{result['plagiarism_report']['overall_plagiarism_percentage']:.1f}%"
+        )
+    
+    with col2:
+        st.metric(
+            "Originality Score",
+            f"{result['plagiarism_report']['overall_originality_score']:.1f}%"
+        )
+    
+    with col3:
+        st.metric(
+            "Total Issues",
+            result['bug_report']['total_issues']
+        )
+    
+    with col4:
+        st.metric(
+            "Files Analyzed",
+            result['files_analyzed']
+        )
+    
+    # Tabs for different analysis sections
+    tab1, tab2, tab3 = st.tabs(["🐛 Bug Report", "📋 Plagiarism Report", "🤖 AI Suggestions"])
+    
+    with tab1:
+        st.subheader("Bug Analysis")
+        
+        if result['bug_report']['total_issues'] == 0:
+            st.success("✅ No issues found!")
+        else:
+            for i, file_result in enumerate(result['bug_report']['file_results']):
+                if file_result.get('total_issues', 0) > 0:
+                    with st.expander(f"📄 {file_result.get('filename', f'File {i+1}')} - {file_result.get('total_issues', 0)} issues", expanded=True):
+                        
+                        # Bugs
+                        if file_result.get('bugs'):
+                            st.markdown("**🐛 Bugs:**")
+                            for bug in file_result['bugs']:
+                                severity_color = {"high": "🔴", "medium": "🟡", "low": "🟢"}.get(bug.get('severity', 'low'), "🟢")
+                                st.markdown(f"{severity_color} **Line {bug.get('line', '?')}:** {bug.get('message', '')}")
+                                st.markdown(f"   💡 *{bug.get('suggestion', '')}*")
+                        
+                        # Performance issues
+                        if file_result.get('performance_issues'):
+                            st.markdown("**⚡ Performance Issues:**")
+                            for perf in file_result['performance_issues']:
+                                severity_color = {"high": "🔴", "medium": "🟡", "low": "🟢"}.get(perf.get('severity', 'low'), "🟢")
+                                st.markdown(f"{severity_color} **Line {perf.get('line', '?')}:** {perf.get('message', '')}")
+                                st.markdown(f"   💡 *{perf.get('suggestion', '')}*")
+                        
+                        # Security issues
+                        if file_result.get('security_issues'):
+                            st.markdown("**🔒 Security Issues:**")
+                            for sec in file_result['security_issues']:
+                                severity_color = {"high": "🔴", "medium": "🟡", "low": "🟢"}.get(sec.get('severity', 'low'), "🟢")
+                                st.markdown(f"{severity_color} **Line {sec.get('line', '?')}:** {sec.get('message', '')}")
+                                st.markdown(f"   💡 *{sec.get('suggestion', '')}*")
+                        
+                        # General suggestions
+                        if file_result.get('suggestions'):
+                            st.markdown("**💡 Suggestions:**")
+                            for suggestion in file_result['suggestions']:
+                                st.markdown(f"• {suggestion.get('message', '')}")
+                                st.markdown(f"  *{suggestion.get('suggestion', '')}*")
+    
+    with tab2:
+        st.subheader("Plagiarism Analysis")
+        
+        plagiarism_pct = result['plagiarism_report']['overall_plagiarism_percentage']
+        if plagiarism_pct > 80:
+            st.error("🚨 HIGH PLAGIARISM DETECTED!")
+        elif plagiarism_pct > 50:
+            st.warning("⚠️ MODERATE SIMILARITY DETECTED")
+        elif plagiarism_pct > 20:
+            st.info("ℹ️ LOW SIMILARITY DETECTED")
+        else:
+            st.success("✅ ORIGINAL CODE DETECTED")
+        
+        # Plagiarism chart
+        if result['plagiarism_report']['file_results']:
+            file_data = []
+            for i, file_result in enumerate(result['plagiarism_report']['file_results']):
+                file_data.append({
+                    'File': f"File {i+1}",
+                    'Plagiarism %': file_result.get('plagiarism_percentage', 0),
+                    'Originality %': file_result.get('originality_score', 100)
+                })
+            
+            df = pd.DataFrame(file_data)
+            fig = px.bar(df, x='File', y='Plagiarism %', title='Plagiarism by File', color='Plagiarism %', color_continuous_scale=['green', 'yellow', 'red'])
+            st.plotly_chart(fig, use_container_width=True)
+    
+    with tab3:
+        st.subheader("AI Suggestions")
+        
+        if result['bug_report'].get('ai_suggestions'):
+            for suggestion in result['bug_report']['ai_suggestions']:
+                with st.expander(f"🤖 {suggestion.get('file', 'Unknown file')}", expanded=True):
+                    st.markdown("**Analysis:**")
+                    st.write(suggestion.get('suggestion', 'No suggestion available'))
+                    
+                    if suggestion.get('rewrite'):
+                        st.markdown("**Suggested Rewrite:**")
+                        st.code(suggestion['rewrite'], language='python')
+        else:
+            st.info("No AI suggestions available. This usually means no high-priority issues were found.")
+
 def compare_repos_page():
     """Page to compare multiple GitHub repositories and show leaderboard."""
     st.header("🏆 Compare GitHub Repositories")
@@ -544,7 +772,7 @@ def main():
     st.sidebar.title("Navigation")
     page = st.sidebar.selectbox(
         "Choose a page",
-        ["Upload Code", "Check Plagiarism", "View Results", "Generate Report", "Compare Repos"]
+        ["Upload Code", "Check Plagiarism", "View Results", "Generate Report", "Code Review", "Compare Repos"]
     )
     
     # Display current status
@@ -562,6 +790,8 @@ def main():
         show_results()
     elif page == "Generate Report":
         generate_report()
+    elif page == "Code Review":
+        code_review_page()
     elif page == "Compare Repos":
         compare_repos_page()
 
