@@ -110,10 +110,10 @@ Our project uniquely combines:
 ### **Installation**
 
 1. **Clone the repository**
-   ```bash
-git clone https://github.com/yourusername/ai-code-plagiarism-detector.git
-cd ai-code-plagiarism-detector
-   ```
+```bash
+git clone https://github.com/katikolakarthik/CodeGaurdian_CodeKurukshetra_hackathon.git
+cd CodeGaurdian_CodeKurukshetra_hackathon
+```
 
 2. **Install dependencies**
    ```bash
@@ -313,8 +313,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 📞 Support
 
 For support and questions:
-- **GitHub Issues**: [Create an issue](https://github.com/yourusername/ai-code-plagiarism-detector/issues)
-- **Documentation**: [Full Documentation](https://github.com/yourusername/ai-code-plagiarism-detector/wiki)
+- **GitHub Issues**: [Create an issue](https://github.com/katikolakarthik/CodeGaurdian_CodeKurukshetra_hackathon/issues)
+- **Repository**: [View on GitHub](https://github.com/katikolakarthik/CodeGaurdian_CodeKurukshetra_hackathon)
 - **API Reference**: http://localhost:8000/docs
 
 ---
