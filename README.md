@@ -331,42 +331,10 @@ python start_frontend.py
 
 ---
 
-## 🤝 Contributing
-
-We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
-
-### **Development Setup**
-```bash
-# Install development dependencies
-pip install -r requirements-dev.txt
-
-# Run tests
-pytest tests/
-
-# Run linting
-flake8 .
-```
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
 ## 👥 Team
 
 - **Karthik** - Lead Developer & AI Integration Specialist
 - **Project Type**: Hackathon Project - AI Code Plagiarism Detector with TripleMind AI
-
----
-
-## 🏆 Awards & Recognition
-
-- **Hackathon Winner**: Advanced AI Integration Award
-- **Innovation**: TripleMind AI Architecture
-- **Technical Excellence**: Multi-model AI Integration
 
 ---
 
@@ -379,9 +347,9 @@ For support and questions:
 
 ---
 
-## 🌟 Star the Repository
+## 📄 License
 
-If you find this project helpful, please give it a ⭐ on GitHub!
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
