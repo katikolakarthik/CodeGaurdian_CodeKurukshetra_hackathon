@@ -97,10 +97,12 @@ pip install -r requirements.txt
 # Copy the example environment file
 cp .env.example .env
 
-# Edit .env file with your API keys
-GOOGLE_API_KEY=your_google_api_key_here
-OPENROUTER_API_KEY=your_openrouter_api_key_here
-GITHUB_TOKEN=your_github_token_here
+# Edit .env file with your API keys (NEVER commit this file!)
+# Get your API keys from:
+# - Google API: https://makersuite.google.com/app/apikey
+# - OpenRouter: https://openrouter.ai/
+# - GitHub: https://github.com/settings/tokens
+# - HuggingFace: https://huggingface.co/settings/tokens
 ```
 
 4. **Start the application**
@@ -222,10 +224,12 @@ python start_frontend.py
 
 ## 🔒 Security & Privacy
 
-- **API Key Management**: Secure environment variable storage
+- **API Key Management**: Secure environment variable storage (`.env` file is gitignored)
 - **Data Processing**: Local processing with minimal external dependencies
 - **Privacy Protection**: No code storage in external databases
 - **Secure Communication**: HTTPS endpoints and secure API calls
+- **Secret Protection**: GitHub Push Protection prevents accidental secret exposure
+- **Environment Variables**: Use `.env.example` as template, never commit `.env` file
 
 ---
 
