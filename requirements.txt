@@ -13,3 +13,4 @@ seaborn==0.12.2
 plotly==5.17.0
 reportlab==4.0.4
 python-multipart==0.0.6
+PyMuPDF==1.23.8
