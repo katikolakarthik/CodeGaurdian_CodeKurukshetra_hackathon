@@ -22,6 +22,7 @@ from utils.github import github_fetcher
 from utils.review import code_reviewer
 from utils.plagiarism import plagiarism_checker
 from utils.github_api import github_api
+from utils.triple_mind_ai import TripleMindAI
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -42,6 +43,9 @@ app.add_middleware(
 # In-memory storage for submissions (in production, use a proper database)
 submissions_db = {}
 chunks_db = {}
+
+# Initialize TripleMind AI service
+triple_mind_ai = TripleMindAI()
 
 @app.get("/")
 async def root():
@@ -755,6 +759,158 @@ def _detect_language_from_extension(extension: str) -> str:
         '.rs': 'rust'
     }
     return extension_map.get(extension.lower(), 'python')
+
+@app.post("/triple_mind_analyze")
+async def triple_mind_analyze(
+    question: str = Form(...),
+    code: Optional[str] = Form(None),
+    file: Optional[UploadFile] = File(None),
+    repo_url: Optional[str] = Form(None),
+    models: str = Form("gemini,deepseek,gpt_oss"),  # Comma-separated list
+    team_name: str = Form("Unknown Team"),
+    submission_name: str = Form("TripleMind Analysis")
+):
+    """
+    TripleMind AI Analysis - Comprehensive code analysis using three AI models.
+    
+    Args:
+        question: The question to analyze
+        code: Raw code text (optional)
+        file: Uploaded code file (optional)
+        repo_url: GitHub repository URL (optional)
+        models: Comma-separated list of models to use (gemini,deepseek,gpt_oss)
+        team_name: Name of the team
+        submission_name: Name of the submission
+        
+    Returns:
+        JSON response with TripleMind analysis
+    """
+    try:
+        # Parse models list
+        model_list = [m.strip() for m in models.split(',') if m.strip()]
+        if not model_list:
+            model_list = ['gemini', 'deepseek', 'gpt_oss']
+        
+        # Extract code content
+        code_content = None
+        code_context = []
+        
+        if repo_url:
+            # GitHub repository analysis
+            repo_data = github_api.fetch_repository(repo_url)
+            if not repo_data['success']:
+                raise HTTPException(status_code=400, detail=f"Failed to fetch repository: {repo_data['error']}")
+            
+            for file_data in repo_data['files']:
+                code_content = file_data['content']
+                # Create context chunks for citations
+                code_context.append({
+                    'filename': file_data['path'],
+                    'text': code_content[:1000],  # First 1000 chars
+                    'line_number': 1
+                })
+                break  # Use first file for context
+        
+        elif file:
+            # Uploaded file analysis
+            content = await file.read()
+            code_content = content.decode('utf-8')
+            code_context.append({
+                'filename': file.filename,
+                'text': code_content[:1000],
+                'line_number': 1
+            })
+        
+        elif code:
+            # Raw code analysis
+            code_content = code
+            code_context.append({
+                'filename': 'input.txt',
+                'text': code_content[:1000],
+                'line_number': 1
+            })
+        
+        else:
+            raise HTTPException(status_code=400, detail="No input provided. Please provide code, file, or repo_url")
+        
+        # Perform TripleMind analysis
+        analysis_result = triple_mind_ai.analyze_with_triple_mind(
+            question=question,
+            code_context=code_context,
+            models=model_list
+        )
+        
+        # Generate combined response
+        combined_response = triple_mind_ai.get_combined_response(analysis_result)
+        
+        return {
+            "success": True,
+            "analysis_id": str(uuid.uuid4()),
+            "timestamp": datetime.now().isoformat(),
+            "question": question,
+            "models_used": model_list,
+            "responses": analysis_result['responses'],
+            "combined_response": combined_response,
+            "citations": analysis_result['citations'],
+            "metadata": {
+                "team_name": team_name,
+                "submission_name": submission_name,
+                "input_type": "github_repo" if repo_url else "file_upload" if file else "raw_code",
+                "analysis_time": datetime.now().isoformat()
+            }
+        }
+        
+    except UnicodeDecodeError:
+        raise HTTPException(status_code=400, detail="Invalid file encoding. Please upload a text file.")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"TripleMind analysis failed: {str(e)}")
+
+@app.post("/triple_mind_question")
+async def triple_mind_question(
+    question: str = Form(...),
+    models: str = Form("gemini,deepseek,gpt_oss")
+):
+    """
+    Ask a general question using TripleMind AI models.
+    
+    Args:
+        question: The question to ask
+        models: Comma-separated list of models to use
+        
+    Returns:
+        JSON response with AI answers
+    """
+    try:
+        # Parse models list
+        model_list = [m.strip() for m in models.split(',') if m.strip()]
+        if not model_list:
+            model_list = ['gemini', 'deepseek', 'gpt_oss']
+        
+        # Perform TripleMind analysis
+        analysis_result = triple_mind_ai.analyze_with_triple_mind(
+            question=question,
+            code_context=None,
+            models=model_list
+        )
+        
+        # Generate combined response
+        combined_response = triple_mind_ai.get_combined_response(analysis_result)
+        
+        return {
+            "success": True,
+            "question_id": str(uuid.uuid4()),
+            "timestamp": datetime.now().isoformat(),
+            "question": question,
+            "models_used": model_list,
+            "responses": analysis_result['responses'],
+            "combined_response": combined_response,
+            "metadata": {
+                "analysis_time": datetime.now().isoformat()
+            }
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"TripleMind question failed: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn
