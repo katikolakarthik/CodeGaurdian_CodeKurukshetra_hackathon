@@ -333,24 +333,11 @@ python start_frontend.py
 
 ## 👥 Team
 
-- **Karthik** - Lead Developer & AI Integration Specialist
+- **KATIKOLA KARTHIK** - TKR COLLEGE OF ENGINEERING AND TECHNOLOGY
 - **Project Type**: Hackathon Project - AI Code Plagiarism Detector with TripleMind AI
 
 ---
 
-## 📞 Support
+**Built with ❤️ for the CODE TAPASYA and Code Kurukshetra Hackathon**
 
-For support and questions:
-- **GitHub Issues**: [Create an issue](https://github.com/katikolakarthik/CodeGaurdian_CodeKurukshetra_hackathon/issues)
-- **Repository**: [View on GitHub](https://github.com/katikolakarthik/CodeGaurdian_CodeKurukshetra_hackathon)
-- **API Reference**: http://localhost:8000/docs
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-**Built with ❤️ for the AI and Developer Community**
+**Thank you and Love you!** 💙
