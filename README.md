@@ -110,10 +110,10 @@ Our project uniquely combines:
 ### **Installation**
 
 1. **Clone the repository**
-   ```bash
-git clone https://github.com/yourusername/ai-code-plagiarism-detector.git
-cd ai-code-plagiarism-detector
-   ```
+```bash
+git clone https://github.com/katikolakarthik/CodeGaurdian_CodeKurukshetra_hackathon.git
+cd CodeGaurdian_CodeKurukshetra_hackathon
+```
 
 2. **Install dependencies**
    ```bash
@@ -121,9 +121,9 @@ cd ai-code-plagiarism-detector
    ```
 
 3. **Configure environment variables**
-   ```bash
+```bash
 # Copy the example environment file
-   cp .env.example .env
+cp .env.example .env
 
 # Edit .env file with your API keys (NEVER commit this file!)
 # Get your API keys from:
@@ -131,21 +131,81 @@ cd ai-code-plagiarism-detector
 # - OpenRouter: https://openrouter.ai/
 # - GitHub: https://github.com/settings/tokens
 # - HuggingFace: https://huggingface.co/settings/tokens
+
+# Example .env file content:
+# GOOGLE_API_KEY=your_google_api_key_here
+# OPENROUTER_API_KEY=your_openrouter_api_key_here
+# GITHUB_TOKEN=your_github_token_here
+# HUGGINGFACE_API_TOKEN=your_huggingface_token_here
 ```
 
 4. **Start the application**
-   ```bash
+```bash
 # Terminal 1: Start Backend
 python start_backend.py
 
-# Terminal 2: Start Frontend
+# Terminal 2: Start Frontend  
 python start_frontend.py
 ```
 
-5. **Access the application**
-- **Frontend**: http://localhost:8501
-- **Backend API**: http://localhost:8000
-- **API Documentation**: http://localhost:8000/docs
+### **Detailed Setup Instructions**
+
+#### **Step 1: Get API Keys**
+
+1. **Google API Key** (for Gemini AI):
+   - Visit: https://makersuite.google.com/app/apikey
+   - Create a new API key
+   - Copy the key
+
+2. **OpenRouter API Key** (for DeepSeek & GPT-OSS):
+   - Visit: https://openrouter.ai/
+   - Sign up and get your API key
+   - Copy the key
+
+3. **GitHub Token** (for repository analysis):
+   - Visit: https://github.com/settings/tokens
+   - Generate new token with `repo` and `public_repo` scopes
+   - Copy the token
+
+4. **HuggingFace Token** (for embeddings):
+   - Visit: https://huggingface.co/settings/tokens
+   - Create new token
+   - Copy the token
+
+#### **Step 2: Configure Environment**
+
+1. **Copy the example file:**
+```bash
+cp .env.example .env
+```
+
+2. **Edit the .env file** with your actual API keys:
+```bash
+# Open .env file in your text editor
+# Replace the placeholder values with your actual keys:
+
+GOOGLE_API_KEY=your_actual_google_api_key_here
+OPENROUTER_API_KEY=your_actual_openrouter_api_key_here
+GITHUB_TOKEN=your_actual_github_token_here
+HUGGINGFACE_API_TOKEN=your_actual_huggingface_token_here
+```
+
+#### **Step 3: Test the Setup**
+
+1. **Start Backend:**
+```bash
+python start_backend.py
+```
+
+2. **Start Frontend:**
+```bash
+python start_frontend.py
+```
+
+3. **Access the application:**
+   - Frontend: http://localhost:8501
+   - Backend API: http://localhost:8000
+   - API Docs: http://localhost:8000/docs
 
 ---
 
@@ -313,8 +373,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 📞 Support
 
 For support and questions:
-- **GitHub Issues**: [Create an issue](https://github.com/yourusername/ai-code-plagiarism-detector/issues)
-- **Documentation**: [Full Documentation](https://github.com/yourusername/ai-code-plagiarism-detector/wiki)
+- **GitHub Issues**: [Create an issue](https://github.com/katikolakarthik/CodeGaurdian_CodeKurukshetra_hackathon/issues)
+- **Repository**: [View on GitHub](https://github.com/katikolakarthik/CodeGaurdian_CodeKurukshetra_hackathon)
 - **API Reference**: http://localhost:8000/docs
 
 ---
