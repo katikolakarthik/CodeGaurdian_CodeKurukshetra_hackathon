@@ -5,6 +5,26 @@
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.28.1-red.svg)](https://streamlit.io)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
+## 📸 **Project Screenshots**
+
+### **Main Dashboard - Unified Workflow**
+![Main Dashboard](screenshots/main_dashboard.png)
+*Complete plagiarism detection workflow in a single interface*
+
+### **TripleMind AI Analysis**
+![TripleMind AI](screenshots/triplemind_ai.png)
+*Advanced AI analysis using Gemini, DeepSeek, and GPT-OSS-120B models*
+
+### **Code Review & Analysis**
+![Code Review](screenshots/code_review.png)
+*Automated code quality assessment and security analysis*
+
+### **Repository Comparison**
+![Repository Comparison](screenshots/repo_comparison.png)
+*GitHub repository analysis and similarity detection*
+
+---
+
 ## 🎯 Project Overview
 
 **AI Code Plagiarism Detector with TripleMind AI** is a revolutionary hybrid system that combines advanced plagiarism detection capabilities with cutting-edge AI-powered code analysis. This project integrates **three powerful AI models** (Gemini, DeepSeek, and GPT-OSS-120B) to provide comprehensive code analysis, making it a complete solution for academic integrity and code quality assessment.
@@ -46,6 +66,14 @@ Our project uniquely combines:
 - **Best Practices**: AI-powered recommendations for code improvement
 - **Multi-format Support**: File upload, code paste, and GitHub integration
 
+### 🎨 **Visual Features**
+- **Interactive Dashboards**: Real-time visualization of analysis results
+- **Modern UI/UX**: Clean, responsive design with intuitive navigation
+- **Progress Indicators**: Visual feedback during processing
+- **Charts & Graphs**: Interactive data visualization for similarity analysis
+- **Multi-tab Interface**: Organized sections for different analysis types
+- **Real-time Updates**: Live status updates and progress tracking
+
 ---
 
 ## 🏗️ Architecture
@@ -82,20 +110,20 @@ Our project uniquely combines:
 ### **Installation**
 
 1. **Clone the repository**
-```bash
+   ```bash
 git clone https://github.com/yourusername/ai-code-plagiarism-detector.git
 cd ai-code-plagiarism-detector
-```
+   ```
 
 2. **Install dependencies**
-```bash
-pip install -r requirements.txt
-```
+   ```bash
+   pip install -r requirements.txt
+   ```
 
 3. **Configure environment variables**
-```bash
+   ```bash
 # Copy the example environment file
-cp .env.example .env
+   cp .env.example .env
 
 # Edit .env file with your API keys (NEVER commit this file!)
 # Get your API keys from:
@@ -106,7 +134,7 @@ cp .env.example .env
 ```
 
 4. **Start the application**
-```bash
+   ```bash
 # Terminal 1: Start Backend
 python start_backend.py
 

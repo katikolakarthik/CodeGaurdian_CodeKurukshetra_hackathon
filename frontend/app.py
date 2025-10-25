@@ -95,12 +95,12 @@ def upload_file():
         st.subheader("📄 Upload Code File")
         st.markdown("Choose a code file from your computer to upload and analyze.")
         
-        uploaded_file = st.file_uploader(
-            "Choose a code file",
-            type=['py', 'java', 'c', 'cpp', 'js', 'ts', 'html', 'css', 'php', 'rb', 'go', 'rs'],
-            help="Supported formats: Python, Java, C/C++, JavaScript, TypeScript, HTML, CSS, PHP, Ruby, Go, Rust"
-        )
-        
+    uploaded_file = st.file_uploader(
+        "Choose a code file",
+        type=['py', 'java', 'c', 'cpp', 'js', 'ts', 'html', 'css', 'php', 'rb', 'go', 'rs'],
+        help="Supported formats: Python, Java, C/C++, JavaScript, TypeScript, HTML, CSS, PHP, Ruby, Go, Rust"
+    )
+    
         if uploaded_file:
             st.success(f"✅ Selected file: {uploaded_file.name}")
             st.info(f"File size: {len(uploaded_file.getvalue())} bytes")
@@ -115,12 +115,12 @@ def upload_file():
         st.subheader("📝 Paste Code Directly")
         st.markdown("Paste your code directly into the text area below.")
         
-        code_input = st.text_area(
-            "Paste your code here",
+    code_input = st.text_area(
+        "Paste your code here",
             height=300,
-            placeholder="def hello_world():\n    print('Hello, World!')"
-        )
-        
+        placeholder="def hello_world():\n    print('Hello, World!')"
+    )
+    
         if code_input:
             st.success(f"✅ Code entered ({len(code_input)} characters)")
             st.subheader("📖 Code Preview")
@@ -210,12 +210,12 @@ def upload_file():
                     else:
                         # Code input processing
                         files = {"file": ("input.txt", code_input.encode(), "text/plain")}
-                        data = {
-                            "team_name": team_name,
-                            "submission_name": submission_name,
-                            "language": language
-                        }
-                        response = requests.post(f"{API_BASE_URL}/upload", files=files, data=data)
+                    data = {
+                        "team_name": team_name,
+                        "submission_name": submission_name,
+                        "language": language
+                    }
+                    response = requests.post(f"{API_BASE_URL}/upload", files=files, data=data)
                     
                     if response.status_code == 200:
                         result = response.json()
@@ -269,9 +269,9 @@ def check_plagiarism():
         st.subheader("📄 Upload File for Plagiarism Check")
         st.markdown("Upload a code file to check for plagiarism against the database.")
         
-        uploaded_file = st.file_uploader(
-            "Choose a code file to check for plagiarism",
-            type=['py', 'java', 'c', 'cpp', 'js', 'ts', 'html', 'css', 'php', 'rb', 'go', 'rs'],
+    uploaded_file = st.file_uploader(
+        "Choose a code file to check for plagiarism",
+        type=['py', 'java', 'c', 'cpp', 'js', 'ts', 'html', 'css', 'php', 'rb', 'go', 'rs'],
             key="check_file",
             help="Select a code file to analyze for plagiarism"
         )
@@ -290,8 +290,8 @@ def check_plagiarism():
         st.subheader("📝 Paste Code for Plagiarism Check")
         st.markdown("Paste your code directly to check for plagiarism.")
         
-        code_input = st.text_area(
-            "Paste code to check",
+    code_input = st.text_area(
+        "Paste code to check",
             height=250,
             key="check_code_input",
             placeholder="def my_function():\n    # Your code here\n    return result"
@@ -480,13 +480,13 @@ def show_results():
     
     with col1:
         fig1 = px.bar(
-            df, 
-            x='Chunk', 
-            y='Similarity %',
+        df, 
+        x='Chunk', 
+        y='Similarity %',
             color='Severity',
             color_discrete_map={'High': 'red', 'Medium': 'orange', 'Low': 'green'},
-            title="Similarity Percentage by Code Chunk"
-        )
+        title="Similarity Percentage by Code Chunk"
+    )
         fig1.update_layout(height=400, xaxis_tickangle=-45)
         st.plotly_chart(fig1, use_container_width=True)
     
@@ -812,17 +812,17 @@ def generate_report():
                     
                     # Detailed results if requested
                     if report_scope in ["Detailed Analysis", "Complete Report"]:
-                        story.append(Paragraph("Detailed Analysis", styles['Heading2']))
-                        for i, chunk in enumerate(result['chunk_results']):
+                    story.append(Paragraph("Detailed Analysis", styles['Heading2']))
+                    for i, chunk in enumerate(result['chunk_results']):
                             if chunk['is_flagged'] or report_scope == "Complete Report":
-                                story.append(Paragraph(f"Chunk {i+1}", styles['Heading3']))
-                                story.append(Paragraph(f"Similarity: {chunk['plagiarism_percentage']:.1f}%", styles['Normal']))
-                                story.append(Paragraph(f"Originality: {chunk['originality_score']:.1f}%", styles['Normal']))
-                                story.append(Paragraph(f"Flagged: {'Yes' if chunk['is_flagged'] else 'No'}", styles['Normal']))
+                        story.append(Paragraph(f"Chunk {i+1}", styles['Heading3']))
+                        story.append(Paragraph(f"Similarity: {chunk['plagiarism_percentage']:.1f}%", styles['Normal']))
+                        story.append(Paragraph(f"Originality: {chunk['originality_score']:.1f}%", styles['Normal']))
+                        story.append(Paragraph(f"Flagged: {'Yes' if chunk['is_flagged'] else 'No'}", styles['Normal']))
                                 if include_code_snippets:
                                     story.append(Paragraph("Code:", styles['Heading4']))
                                     story.append(Paragraph(chunk['text'][:200] + "...", styles['Code']))
-                                story.append(Spacer(1, 10))
+                        story.append(Spacer(1, 10))
                     
                     doc.build(story)
                     buffer.seek(0)
@@ -1267,17 +1267,17 @@ def compare_repos_page():
             st.warning("⚠️ Please enter at least two repository URLs.")
             return
         
-        with st.spinner("Fetching repositories and computing originality leaderboard..."):
-            try:
+            with st.spinner("Fetching repositories and computing originality leaderboard..."):
+                try:
                 data = {
                     "repo_urls": ",".join(urls),
                     "team_prefix": "RepoTeam",
                     "submission_prefix": "RepoSubmission"
                 }
-                resp = requests.post(f"{API_BASE_URL}/compare_repos", data=data)
+                    resp = requests.post(f"{API_BASE_URL}/compare_repos", data=data)
                 
-                if resp.status_code == 200:
-                    result = resp.json()
+                    if resp.status_code == 200:
+                        result = resp.json()
                     st.success("✅ Repository comparison complete!")
                     
                     # Store results in session state
@@ -1286,7 +1286,7 @@ def compare_repos_page():
                     # Display results
                     display_comparison_results(result)
                     
-                else:
+                    else:
                     error_detail = resp.json().get('detail', 'Failed to compare repositories')
                     st.error(f"❌ Error: {error_detail}")
                     
@@ -1297,7 +1297,7 @@ def compare_repos_page():
                     st.markdown("• Verify your GitHub token has the necessary permissions")
                     st.markdown("• Try with fewer repositories if the comparison is timing out")
                     
-            except Exception as e:
+                except Exception as e:
                 st.error(f"❌ Error comparing repositories: {e}")
     
     # Show previous results if available
